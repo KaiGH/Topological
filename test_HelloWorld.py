@@ -1,4 +1,4 @@
 from HelloWorld import hello
  
-def example_test():
+def test_hello():
     assert hello() == "Hello World"
