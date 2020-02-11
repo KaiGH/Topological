@@ -55,6 +55,6 @@ def writeYaml():
     #    yaml.dump(node_coords, wf)
 
 
-writeYaml()
-#editYaml()
-#readYaml()
+#writeYaml()
+readYaml()
+editYaml()
