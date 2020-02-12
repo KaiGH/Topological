@@ -24,8 +24,8 @@ def nodeNumber(filename):
     #returns the next number in sequence
     return numbers[-1] + 1
 
-#Editing Existing Data in the Yaml File
-def editYaml(filename):
+#Editing Existing Node Data in the Yaml File
+def editNode(filename):
     nodeList = readYaml(filename)
     print("Choose a node to edit")
     print(nodeNames(filename))
@@ -47,16 +47,64 @@ def editYaml(filename):
           #Dumps New Yaml Data into File
           yaml.dump(nodeList, stream)   
           break
+#Deleting Nodes
+def deleteNode(filename):
+    nodeList = readYaml(filename)
+    print("Choose a node to delete")
+    nodeName = input("Enter node: \n")
+    #Searches from the First to the Last Node
+    for index in range(len(nodeList)):      
+    #If the Node Matches with the Inputted Node
+      if nodeList[index]["meta"]["node"] == nodeName:
+          #Deletes Node
+          del(nodeList[index])
+          stream = open('riseholme.tmap', 'w')   
+          yaml.dump(nodeList, stream)   
+
+
+#Adding Path Data in the Yaml File
+def addPath(filename):
+    nodeList = readYaml(filename)
+    nodeName1 = input("Enter start WayPoint: \n")
+    nodeName2 = input("Enter end WayPoint: \n")
+    newPath = copy.deepcopy(nodeList[1]["node"]["edges"][0])
+    newPath["edge_id"] = nodeName1 + "_" + nodeName2
+    newPath["node"] = nodeName1
+
+    for index in range(len(nodeList)):
+        if nodeName1 == nodeList[index]["meta"]["node"]:
+            nodeList[index]["node"]["edges"].append(newPath)
+            stream = open('riseholme.tmap', 'w')   
+            yaml.dump(nodeList, stream)   
+            #how to access a specific path print(nodeList[1]["node"]["edges"][0]["edge_id"])
+
+#Deleting Existing Node
+def deletePath(filename):
+     nodeList = readYaml(filename)
+     print("Select nodes to remove path")
+     nodeName1 = input("Enter start node of path: \n")
+     nodeName2 = input("Enter end node of path: \n")
+     searchPath = nodeName1 + "_" + nodeName2      
+     for i in range(len(nodeList)):     
+        for j in range(len(nodeList[i]["node"]["edges"])):
+            if nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath:
+                print(i, j, "\n", nodeList[i]["node"]["edges"][j])
+                print("beep")
+                del(nodeList[i]["node"]["edges"][j])
+                stream = open('riseholme.tmap', 'w')   
+                yaml.dump(nodeList, stream)  
+
+
 
 
 #Adding a New Node to The Yaml File
-def writeYaml(filename):
-  #Get User Input
+def writeNode(filename):
+    #Get User Input
     print("to make new node, enter x and y")
     newX = int(input("enter new x value: \n"))
     newY = int (input("enter new y value: \n"))
 
-  #Gets File, Takes a Node to be Used as a Template for our New Node
+    #Gets File, Takes a Node to be Used as a Template for our New Node
     nodeList = readYaml(filename)
     newNode = copy.deepcopy(nodeList[0])
     #Calls next number in sequence of nodes to define this new one
@@ -81,8 +129,12 @@ def writeYaml(filename):
 
 #Uncomment the function you wish to call
 #All methods take file name to make file switching easy
-writeYaml("riseholme.tmap")
+
+#writeNode("riseholme.tmap")
+#addPath("riseholme.tmap")
 #readYaml("riseholme.tmap")
 #print(nodeNames("riseholme.tmap"))
 #editYaml("riseholme.tmap")
+#deletePath("riseholme.tmap")
 #print(nodeNumber("riseholme.tmap"))
+deleteNode("riseholme.tmap")
