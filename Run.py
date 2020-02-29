@@ -16,7 +16,7 @@ def main():
         from gui import app
     elif key == '3':
         print("\nHelp Documentation:")
-        help()
+        print(help())
     elif key == '4':
         print("\nGoodbye") 
         sys.exit()
@@ -26,7 +26,7 @@ def main():
     main()
 
 def help():
-    print("""
+    return("""
     View the most up-to-date documentation online at 
     https://github.com/KaiGH/Topological
     For offline users, a readme is distributed with this 
@@ -35,4 +35,5 @@ def help():
     Tool Tips which are displayed when hovering over buttons. 
     """)
 
-main() 
+if __name__ == "__main__":
+    main()
