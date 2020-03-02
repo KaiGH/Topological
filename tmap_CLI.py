@@ -1,8 +1,12 @@
 import yaml
 import copy
+from PIL import Image as PILImage,ImageTk
+from tkinter import *
 
+ 
 #Opening the Yaml File to Print out the Contents
 def readYaml(filename):
+    print(filename)
     with open(filename) as fileReader:
         node_coords = yaml.load(fileReader, Loader=yaml.FullLoader)
         return (node_coords)
@@ -13,6 +17,12 @@ def nodeNames(filename):
     data = readYaml(filename)
     #returns all nodes that exist in file
     return [node["meta"]["node"] for node in data]
+
+def nodeCoords(filename):
+   #Recieves file data from read function
+    data = readYaml(filename)
+    #returns all nodes that exist in file
+    return [[node["node"]["pose"]["position"]["x"],node["node"]["pose"]["position"]["y"], node["meta"]["node"]]for node in data]
 
 #Generates all Numbers Attached to Waypoints, Finds the Next Unused Number
 def nodeNumber(filename):
@@ -89,11 +99,19 @@ def deletePath(filename):
         for j in range(len(nodeList[i]["node"]["edges"])):
             if nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath:
                 print(i, j, "\n", nodeList[i]["node"]["edges"][j])
-                print("beep")
                 del(nodeList[i]["node"]["edges"][j])
                 stream = open('riseholme.tmap', 'w')   
                 yaml.dump(nodeList, stream)  
 
+
+def pathNums(filename):
+    nodeList = readYaml(filename)
+    paths = []
+    for i in range(len(nodeList)):     
+        for j in range(len(nodeList[i]["node"]["edges"])):
+            path = nodeList[i]["node"]["edges"][j]["edge_id"]
+            paths.append([[path[:path.index("_")]], [path[path.index("_")+1:]]])
+    return paths
 
 
 
@@ -126,7 +144,54 @@ def addNode(filename):
     stream = open('riseholme.tmap', 'w')   
     yaml.dump(nodeList, stream)   
 
+def showMap(filename, imagename, ORIGIN, SCALE):
+    points = nodeCoords(filename)
+    im = PILImage.open(imagename)
+    width, height = im.size
+    root = Tk()      
+    canvas = Canvas(root, width=width/SCALE, height = height/SCALE)
+    canvas.pack()      
+    image2=im.resize((int(width/SCALE),int(height/SCALE)),PILImage.ANTIALIAS)
+    riseholme2=ImageTk.PhotoImage(image2)
+    canvas.create_image(0,0, anchor=NW, image=riseholme2) 
+
+    paths = pathNums(filename)
+
+    for path in paths: 
+        pointA = path[0][0]
+        pointB = path[1][0]
+    
+        pointACoords = None
+        pointBCoords = None
+
+        for point in points:
+            if point[2] == pointA:
+                pointACoords = [point[0], point[1]]
+            if point[2] == pointB:
+                pointBCoords = [point[0], point[1]]
+        if(pointACoords != None and pointBCoords != None):
+                draw_line(pointACoords, pointBCoords, 0.05, ORIGIN, SCALE, width, height, canvas)
+
+    for point in points:
+        draw_point(point[0], point[1], 0.05, point[2][8:], ORIGIN, SCALE, width, height, canvas)
+
+    mainloop()  
+
+def draw_point(x, y, scale, label, ORIGIN, SCALE, width, height, canvas):
+    newX, newY =  (((x-ORIGIN[0])/scale)/SCALE), (height/SCALE)- (((y-ORIGIN[1])/scale)/SCALE)
+    radius = 7.5
+    canvas.create_oval(newX - radius, newY - radius, newX + radius, newY + radius, fill = 'blue')
+    canvas.create_text(newX, newY, text = label, font=("Courier", 6), fill='white')
+
+def draw_line(a, b, scale, ORIGIN, SCALE, width, height, canvas):
+    newAX, newAY =  (((a[0]-ORIGIN[0])/scale)/SCALE), (height/SCALE)- (((a[1]-ORIGIN[1])/scale)/SCALE)
+    newBX, newBY =  (((b[0]-ORIGIN[0])/scale)/SCALE), (height/SCALE)- (((b[1]-ORIGIN[1])/scale)/SCALE)
+    canvas.create_line(newAX, newAY, newBX, newBY)
+  
+
 def switch():
+        SCALE = 2
+        ORIGIN = (-31.45, -12.45)
         i=0
         while i != 8:
             i = int(input())
@@ -144,9 +209,11 @@ def switch():
                 deletePath("riseholme.tmap")
             if i == 7:
                 print("I'll make this soon")
+            if i == 8:
+                showMap('riseholme.tmap', 'riseholme.pgm', ORIGIN, SCALE)
 
 print("Enter the number corrosponding to the function you wish to execute:")
-print("1.Add Node\n2.Edit Node\n3.Delete Node\n4.Print Nodes\n5.Add Path\n6.Delete Path\n7.Print Paths")
+print("1.Add Node\n2.Edit Node\n3.Delete Node\n4.Print Nodes\n5.Add Path\n6.Delete Path\n7.Print Paths\n8.Show Map")
 switch()
 
 #Uncomment the function you wish to call
