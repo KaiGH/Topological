@@ -8,14 +8,16 @@ def main():
     4.Exit - Quit Application
     """)
     key = input("Selection: ")
-    if key == 1:
+    if key == '1':
         print("\nCLI Launched")
-    elif key == 2:
+        from tmap_CLI import switch
+    elif key == '2':
         print("\nGUI Launched")
-    elif key == 3:
+        from gui import app
+    elif key == '3':
         print("\nHelp Documentation:")
-        help()
-    elif key == 4:
+        print(help())
+    elif key == '4':
         print("\nGoodbye") 
         sys.exit()
         key = None
@@ -24,7 +26,7 @@ def main():
     main()
 
 def help():
-    print("""
+    return("""
     View the most up-to-date documentation online at 
     https://github.com/KaiGH/Topological
     For offline users, a readme is distributed with this 
@@ -33,4 +35,5 @@ def help():
     Tool Tips which are displayed when hovering over buttons. 
     """)
 
-main() 
+if __name__ == "__main__":
+    main()
