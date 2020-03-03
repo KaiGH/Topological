@@ -6,7 +6,6 @@ from tkinter import *
  
 #Opening the Yaml File to Print out the Contents
 def readYaml(filename):
-    print(filename)
     with open(filename) as fileReader:
         node_coords = yaml.load(fileReader, Loader=yaml.FullLoader)
         return (node_coords)
@@ -113,7 +112,12 @@ def pathNums(filename):
             paths.append([[path[:path.index("_")]], [path[path.index("_")+1:]]])
     return paths
 
-
+def printPaths(filename):
+    nodeList = readYaml(filename)
+    for i in range(len(nodeList)):     
+       print("For node", nodeList[i]["meta"]["node"], "these paths exist:")
+       for j in range(len(nodeList[i]["node"]["edges"])):
+           print(nodeList[i]["node"]["edges"][j]["edge_id"])
 
 #Adding a New Node to The Yaml File
 def addNode(filename):
@@ -193,7 +197,7 @@ def switch():
         SCALE = 2
         ORIGIN = (-31.45, -12.45)
         i=0
-        while i != 8:
+        while i != 9:
             i = int(input())
             if i == 1:
                 addNode("riseholme.tmap")  
@@ -208,7 +212,7 @@ def switch():
             if i == 6:
                 deletePath("riseholme.tmap")
             if i == 7:
-                print("I'll make this soon")
+                printPaths("riseholme.tmap")
             if i == 8:
                 showMap('riseholme.tmap', 'riseholme.pgm', ORIGIN, SCALE)
 
