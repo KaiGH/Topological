@@ -53,7 +53,7 @@ class StartPage(tk.Frame):
       
      #selecting map file
      def Map(self):
-        self.filename = filedialog.askopenfilename(title = "Select a File", filetypes = [("PGM files", "*.pgm")])
+        self.filename = filedialog.askopenfilename(title = "Select A File",filetypes =[('PGM Files', '*.pgm')])
         if(self.yamlfilename == ""):
            self.yamlfilename = "/Insert Map File Path"
         self.mainGUI.mapPath = self.filename
@@ -62,7 +62,7 @@ class StartPage(tk.Frame):
         
     #selecting node file
      def YAML(self):
-        self.yamlfilename = filedialog.askopenfilename(title = "Select a File", filetypes = [("TMAP files", "*.tmap")])
+        self.yamlfilename = filedialog.askopenfilename(title = "Select A File", filetypes =[('TMAP Files', '*.tmap')])
         if(self.yamlfilename == ""):
             self.yamlfilename = "/Insert YAML File Path"
         self.mainGUI.tmapPath = self.yamlfilename
@@ -82,6 +82,7 @@ class EditingPage(tk.Frame):
         self.buttons.grid(row = 1, column=0, sticky = W)
         FilePagebutton = ttk.Button(self.header, text ="select different files", command= lambda:controller.show_frame("Start"))
         FilePagebutton.grid()
+
 
         X=Label(self.buttons, text ="Insert X Coordinate")
         self.XEntry=Entry(self.buttons, width= 50, text ="Insert X Coordinate")
@@ -120,9 +121,10 @@ class EditingPage(tk.Frame):
 
         DeletePath = ttk.Button(self.buttons, text= "Delete Path" , command = self.pathDelete)
         DeletePath.grid(row=7, column=1, sticky = E, padx=40)
+        save = ttk.Button(self.buttons, text= "Save", command = self.mapSave)
+        save.grid(row=8, column=1)
 
-        #save = ttk.Button(self, text= "Save")
-        #save.grid(row=8, column=1)
+
 
         #Opening the Yaml File to Print out the Contents
     def readYaml(self, filename):
@@ -131,16 +133,18 @@ class EditingPage(tk.Frame):
             return (node_coords)      
 
     def nodeDelete(self):
-        nodeList = self.readYaml(self.mainGUI.tmapPath)
+        #nodeList = self.readYaml(self.mainGUI.tmapPath)
         nodeName = self.nodeNameEntry.get()
+        print(self.nodeNameEntry.get())
         #Searches from the First to the Last Node
-        for index in range(len(nodeList)):      
+        for index in range(len(self.nodeList)):      
         #If the Node Matches with the Inputted Node
-          if nodeList[index]["meta"]["node"] == nodeName:
+          if self.nodeList[index]["meta"]["node"] == nodeName:
               #Deletes Node
-              del(nodeList[index])
-              stream = open(self.mainGUI.tmapPath, 'w')   
-              yaml.dump(nodeList, stream) 
+              del(self.nodeList[index])
+              #stream = open(self.mainGUI.tmapPath, 'w')   
+              #yaml.dump(self.nodeList, stream) 
+              #stream.close()
               self.canvas.destroy()
               self.loadImage()
 
@@ -150,8 +154,8 @@ class EditingPage(tk.Frame):
         newY = self.YEntry.get()
 
         #Gets File, Takes a Node to be Used as a Template for our New Node
-        nodeList = self.readYaml(self.mainGUI.tmapPath)
-        newNode = copy.deepcopy(nodeList[0])
+        #nodeList = self.readYaml(self.mainGUI.tmapPath)
+        newNode = copy.deepcopy(self.nodeList[0])
         #Calls next number in sequence of nodes to define this new one
         newNumber = self.nodeNumber(self.mainGUI.tmapPath)
     
@@ -162,85 +166,90 @@ class EditingPage(tk.Frame):
         newNode["node"]["pose"]["position"]["y"] = newY
     
         #Appends new node to rest of the file then dumps into file
-        nodeList.append(newNode)
-        stream = open(self.mainGUI.tmapPath, 'w')   
-        yaml.dump(nodeList, stream) 
+        self.nodeList.append(newNode)
+        #stream = open(self.mainGUI.tmapPath, 'w')   
+        #yaml.dump(self.nodeList, stream) 
+        #stream.close()
         self.canvas.destroy()
         self.loadImage()
 
     def nodeEdit(self):
-        nodeList = self.readYaml(self.mainGUI.tmapPath)
+        #nodeList = self.readYaml(self.mainGUI.tmapPath)
         nodeName = self.nodeNameEntry.get()
         newX = self.XEntry.get()
         newY = self.YEntry.get()
     
         #Searches from the First to the Last Node
-        for index in range(len(nodeList)):     
+        for index in range(len(self.nodeList)):     
         #If the Node Matches with the Inputted Node
-          if nodeList[index]["meta"]["node"] == nodeName:
+          if self.nodeList[index]["meta"]["node"] == nodeName:
               #Changing Variables to Match User Input
-              nodeList[index]["node"]["pose"]["position"]["x"] = newX
-              nodeList[index]["node"]["pose"]["position"]["y"] = newY    
+              self.nodeList[index]["node"]["pose"]["position"]["x"] = newX
+              self.nodeList[index]["node"]["pose"]["position"]["y"] = newY    
               #Opens "write" Stream 
-              stream = open(self.mainGUI.tmapPath, 'w')
-              #Dumps New Yaml Data into File
-              yaml.dump(nodeList, stream) 
+              #stream = open(self.mainGUI.tmapPath, 'w')
+              ##Dumps New Yaml Data into File
+              #yaml.dump(self.nodeList, stream) 
+              #stream.close()
               self.canvas.destroy()
               self.loadImage()
               
     def nodeNumber(self, filename):
-        data = self.readYaml(filename)
         #searches all "WayPoint" data and takes the numbers from the ends of those strings
-        numbers = [int(node["meta"]["node"][8:]) for node in data]
+        numbers = [int(node["meta"]["node"][8:]) for node in self.nodeList]
         #puts numbers in order
         numbers.sort()
         #returns the next number in sequence
         return numbers[-1] + 1
 
     def nodeCoords(self, filename):
-       #Recieves file data from read function
-        data = self.readYaml(filename)
         #returns all nodes that exist in file
-        return [[node["node"]["pose"]["position"]["x"],node["node"]["pose"]["position"]["y"], node["meta"]["node"]]for node in data]
+        return [[node["node"]["pose"]["position"]["x"],node["node"]["pose"]["position"]["y"], node["meta"]["node"]]for node in self.nodeList]
 
     def pathNums(self,filename):
-        nodeList = self.readYaml(filename)
+        #nodeList = self.readYaml(filename)
         paths = []
-        for i in range(len(nodeList)):     
-            for j in range(len(nodeList[i]["node"]["edges"])):
-                path = nodeList[i]["node"]["edges"][j]["edge_id"]
+        for i in range(len(self.nodeList)):     
+            for j in range(len(self.nodeList[i]["node"]["edges"])):
+                path = self.nodeList[i]["node"]["edges"][j]["edge_id"]
                 paths.append([[path[:path.index("_")]], [path[path.index("_")+1:]]])
         return paths
 
     def pathAdd(self):
-        nodeList = self.readYaml(self.mainGUI.tmapPath)
+        #nodeList = self.readYaml(self.mainGUI.tmapPath)
         nodeName1 = self.nodeName1Entry.get()
         nodeName2 = self.nodeName2Entry.get()
-        newPath = copy.deepcopy(nodeList[1]["node"]["edges"][0])
+        newPath = copy.deepcopy(self.nodeList[1]["node"]["edges"][0])
         newPath["edge_id"] = nodeName1 + "_" + nodeName2
         newPath["node"] = nodeName1
 
-        for index in range(len(nodeList)):
-            if nodeName1 == nodeList[index]["meta"]["node"]:
-                nodeList[index]["node"]["edges"].append(newPath)
-                stream = open(self.mainGUI.tmapPath, 'w')   
-                yaml.dump(nodeList, stream)  
+        for index in range(len(self.nodeList)):
+            if nodeName1 == self.nodeList[index]["meta"]["node"]:
+                self.nodeList[index]["node"]["edges"].append(newPath)
+                #stream = open(self.mainGUI.tmapPath, 'w')   
+                #yaml.dump(self.nodeList, stream) 
+                #stream.close()
                 self.canvas.destroy()
                 self.loadImage()
 
     def pathDelete(self):
-        nodeList = self.readYaml(self.mainGUI.tmapPath)
+        #nodeList = self.readYaml(self.mainGUI.tmapPath)
         nodeName1 = self.nodeName1Entry.get()
         nodeName2 = self.nodeName2Entry.get()
         searchPath = nodeName1 + "_" + nodeName2      
-        for i in range(len(nodeList)):     
-            for j in range(len(nodeList[i]["node"]["edges"])):
-                if nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath:
-                    del(nodeList[i]["node"]["edges"][j])
-                    stream = open(self.mainGUI.tmapPath, 'w')   
-                    yaml.dump(nodeList, stream) 
+        for i in range(len(self.nodeList)):     
+            for j in range(len(self.nodeList[i]["node"]["edges"])):
+                if self.nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath:
+                    del(self.nodeList[i]["node"]["edges"][j])
+                    #stream = open(self.mainGUI.tmapPath, 'w')   
+                    #yaml.dump(self.nodeList, stream) 
+                    #stream.close()
                     self.canvas.destroy()
                     self.loadImage()
+    def mapSave(self):
+        stream = open(self.mainGUI.tmapPath, 'w')   
+        yaml.dump(self.nodeList, stream) 
+        stream.close()
 
     def drawingWayPoints(self):
         points = self.nodeCoords(self.mainGUI.tmapPath)
@@ -265,7 +274,7 @@ class EditingPage(tk.Frame):
 
     def loadImage(self):
         im = PILImage.open(self.mainGUI.mapPath)
-        self.SCALE = 2
+        self.SCALE = 3
         self.ORIGIN = (-31.45, -12.45)
         self.width, self.height = im.size
         self.canvas = Canvas(self, width=self.width/self.SCALE, height = self.height/self.SCALE)
@@ -295,7 +304,10 @@ class EditingPage(tk.Frame):
 
 
     def onShow(self):
+        self.nodeList = self.readYaml(self.mainGUI.tmapPath)
         self.loadImage()
+
+
 
 #sets instance of GUI
 app = GUI()
