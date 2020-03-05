@@ -1,8 +1,6 @@
-from tkinter import ttk
-from tkinter import filedialog
+from tkinter import ttk, filedialog, Label, Frame, W, Entry, E, Canvas, NW
 from PIL import Image as PILImage,ImageTk
 import tkinter as tk
-from tkinter import *
 import yaml
 import copy
 
