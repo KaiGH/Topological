@@ -53,7 +53,7 @@ class StartPage(tk.Frame):
       
      #selecting map file
      def Map(self):
-        self.filename = filedialog.askopenfilename(initialdir =  "/", title = "Select A File", filetype = (("Map file","*.PGM"),("all files","*.*")))
+        self.filename = filedialog.askopenfilename(title = "Select a File", filetypes = [("PGM files", "*.pgm")])
         if(self.yamlfilename == ""):
            self.yamlfilename = "/Insert Map File Path"
         self.mainGUI.mapPath = self.filename
@@ -62,7 +62,7 @@ class StartPage(tk.Frame):
         
     #selecting node file
      def YAML(self):
-        self.yamlfilename = filedialog.askopenfilename(initialdir =  "/", title = "Select A File", filetype =(("TMAP","*.tmap"),("Yaml file","*.Yaml"),("all files","*.*")))
+        self.yamlfilename = filedialog.askopenfilename(title = "Select a File", filetypes = [("TMAP files", "*.tmap")])
         if(self.yamlfilename == ""):
             self.yamlfilename = "/Insert YAML File Path"
         self.mainGUI.tmapPath = self.yamlfilename
