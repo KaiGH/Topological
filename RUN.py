@@ -10,10 +10,10 @@ def main():
     key = input("Selection: ")
     if key == '1':
         print("\nCLI Launched")
-        from tmap_CLI import switch
+        from CLI import switch
     elif key == '2':
         print("\nGUI Launched")
-        from gui import app
+        from GUI import app
     elif key == '3':
         print("\nHelp Documentation:")
         print(help())

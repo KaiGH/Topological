@@ -1,8 +1,7 @@
 import yaml
 import copy
 from PIL import Image as PILImage,ImageTk
-from tkinter import *
-
+from tkinter import Canvas, Tk, NW, mainloop
  
 #Opening the Yaml File to Print out the Contents
 def readYaml(filename):
