@@ -92,7 +92,7 @@ class StartPage(tk.Frame):
     #selecting tmap file
      def TMAP(self):
          #sets file type
-        self.tmapfilename = filedialog.askopenfilename(title = "Select A File", filetypes =[('TMAP Files', '*.tmap')])
+        self.tmapfilename = filedialog.askopenfilename(title = "Select A File", filetypes =[('TMAP Files', '*.tmap'),('YAML Files', '*.yaml')])
         #if user clicks on open file and then does not select path this will display
         if(self.tmapfilename == ""):
             self.tmapfilename = "/Insert TMAP File Path"
@@ -111,7 +111,7 @@ class EditingPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent) 
         self.mainGUI = controller
-
+        self.SCALE = 3
         self.header = Frame(self)
         self.header.grid(row=0, column = 1)
 
@@ -133,6 +133,9 @@ class EditingPage(tk.Frame):
         self.pathButtons = Frame(self.buttonContainer)
         self.pathButtons.grid(row = 6, column=0)
 
+        self.scaleContainer = Frame(self.buttonContainer)
+        self.scaleContainer.grid(row = 12, column=0)
+
         Blank2=Label(self.buttonContainer, width= 20,text ="")
         Blank2.grid(row=5, column=0)
 
@@ -141,8 +144,23 @@ class EditingPage(tk.Frame):
         
         FilePagebutton = ttk.Button(self.header, width= 20, text ="select different files", command= lambda:controller.show_frame("Start"))
         FilePagebutton.grid()
-        Save = ttk.Button(self.footer, width= 20, text= "Save", command = self.mapSave)
-        Save.grid(row=1, column=1)
+
+        Blank4=Label(self.buttonContainer, width= 20,text ="")
+        Blank4.grid(row=9, column=0)
+
+        Save = ttk.Button(self.buttonContainer, width= 20, text= "Save", command = self.mapSave)
+        Save.grid(row=10, column=0)
+
+        Blank4=Label(self.buttonContainer, width= 20,text ="")
+        Blank4.grid(row=11, column=0)
+
+        scaleLabel=Label(self.scaleContainer, width= 20,text ="Scale")
+        self.scaleEntry=Entry(self.scaleContainer, width= 30, text ="Scale")
+        scaleLabel.grid(row=0, column=0)
+        self.scaleEntry.grid(row=0, column=1
+                             )
+        Scale=ttk.Button(self.buttonContainer, width= 20,text ="Scale", command = self.scale)
+        Scale.grid(row=13, column=0)
 
         AddNode = ttk.Button(self.nodeButtons, width= 20, text= "Add New Node", command = self.addNode)
         AddNode.grid(row=1, column=1)
@@ -177,23 +195,179 @@ class EditingPage(tk.Frame):
         Blank3=Label(self.buttonContainer, width= 20,text ="Insert Parameters:")
         Blank3.grid(row=7, column=0)
 
-        nodeName1=Label(self.pathButtonsEntry, width= 30,text ="Insert Starting Node Name")
-        self.nodeName1Entry=Entry(self.pathButtonsEntry, width= 30, text ="Insert Starting Node Name ")
-        nodeName1.grid(row=2, column=1)
-        self.nodeName1Entry.grid(row=2, column=2)
+        pathStart=Label(self.pathButtonsEntry, width= 30,text ="Insert Starting Node Name")
+        self.pathStartEntry=Entry(self.pathButtonsEntry, width= 30, text ="Insert Starting Node Name ")
+        pathStart.grid(row=2, column=1)
+        self.pathStartEntry.grid(row=2, column=2)
 
-        nodeName2=Label(self.pathButtonsEntry, width= 30,text ="Insert Destination Node Name")
-        self.nodeName2Entry=Entry(self.pathButtonsEntry, width= 30, text ="Insert Destination Node Name ")
-        nodeName2.grid(row=3, column=1)
-        self.nodeName2Entry.grid(row=3, column=2)
+        pathEnd=Label(self.pathButtonsEntry, width= 30,text ="Insert Destination Node Name")
+        self.pathEndEntry=Entry(self.pathButtonsEntry, width= 30, text ="Insert Destination Node Name ")
+        pathEnd.grid(row=3, column=1)
+        self.pathEndEntry.grid(row=3, column=2)
 
+        ###############################################################################################################################################
+        
+        addNodeClick = ttk.Button(self.buttonContainer, width= 20, text= "Add Node", command = self.addNodeClick)
+        addNodeClick.grid(row=14, column=0)
+
+        deleteNodeClick = ttk.Button(self.buttonContainer, width= 20, text= "Delete Node", command = self.deleteNodeClick)
+        deleteNodeClick.grid(row=15, column=0)
+
+        addPathClick = ttk.Button(self.buttonContainer, width= 20, text= "Add Path", command = self.addPathClick)
+        addPathClick.grid(row=17, column=0)
+        
+        deletePathClick = ttk.Button(self.buttonContainer, width= 20, text= "Delete Path", command = self.deletePathClick)
+        deletePathClick.grid(row=18, column=0)
 
 
         #Opening the Yaml File to Print out the Contents
     def readYaml(self, filename):
         with open(filename) as fileReader:
             node_coords = yaml.load(fileReader, Loader=yaml.FullLoader)
-            return (node_coords)      
+            return (node_coords)  
+
+    def getxy(self, event):    
+        x, y = ((event.x*self.SCALE)*0.05) + self.ORIGIN[0], (self.height*0.05) - (((event.y*self.SCALE)*0.05) - self.ORIGIN[1])
+        if self.type == 1:
+            self.addNodeClickPlace(x, y)
+        if self.type == 2:
+            self.deleteNodeClickRemove(x, y)
+        if self.type == 3:
+            self.pathx1, self.pathy1 = x,y 
+            self.canvas.bind('<Button-1>', self.getxy2)
+        if self.type == 4:
+            self.pathx1, self.pathy1 = x,y 
+            self.canvas.bind('<Button-1>', self.getxy2)
+
+    def getxy2(self, event):   
+        x, y = ((event.x*self.SCALE)*0.05) + self.ORIGIN[0], (self.height*0.05) - (((event.y*self.SCALE)*0.05) - self.ORIGIN[1])
+        if self.type == 3:
+            self.pathx2, self.pathy2 = x,y 
+            self.canvas.bind('<Button-1>', self.getxy2)
+            self.addPathClickPlace(self.pathx1,self.pathy1,self.pathx2,self.pathy2)
+
+        if self.type == 4:
+            self.pathx2, self.pathy2 = x,y 
+            self.canvas.bind('<Button-1>', self.getxy2)
+            self.deletePathClickRemove(self.pathx1,self.pathy1,self.pathx2,self.pathy2)
+        
+    def addNodeClick(self):
+        self.type=1
+        self.canvas.bind('<Button-1>', self.getxy)
+
+    def deleteNodeClick(self):
+        self.type=2
+        self.canvas.bind('<Button-1>', self.getxy)
+
+    def addPathClick(self):
+        self.type=3
+        self.canvas.bind('<Button-1>', self.getxy)
+
+    def deletePathClick(self):
+        self.type=4
+        self.canvas.bind('<Button-1>', self.getxy)
+        
+    def addNodeClickPlace(self, x, y):
+        #Get User Input
+        newX = x
+        newY = y
+
+        #Gets File, Takes a Node to be Used as a Template for our New Node
+        newNode = copy.deepcopy(self.nodeList[0])
+        #Calls next number in sequence of nodes to define this new one
+        newNumber = self.nodeNumber(self.mainGUI.tmapPath)
+    
+        #More attributes can be changed but I've started with node definition, name, x and y
+        newNode["meta"]["node"] = "WayPoint"+str(newNumber)
+        newNode["node"]["name"] = "WayPoint"+str(newNumber)
+        newNode["node"]["pose"]["position"]["x"] = newX
+        newNode["node"]["pose"]["position"]["y"] = newY
+    
+        #Appends new node to rest of the file then dumps into file
+        self.nodeList.append(newNode)
+        self.canvas.destroy()
+        self.loadImage()
+        
+    def deleteNodeClickRemove(self, x ,y):
+        #nodeList = self.readYaml(self.mainGUI.tmapPath)
+        xUpper = x+1
+        xLower = x-1
+        yUpper = y+1
+        yLower = y-1
+        for i in range(len(self.nodeList)): 
+            if self.nodeList[i]["node"]["pose"]["position"]["y"]<yUpper and self.nodeList[i]["node"]["pose"]["position"]["y"] > yLower and self.nodeList[i]["node"]["pose"]["position"]["x"]<xUpper and self.nodeList[i]["node"]["pose"]["position"]["x"] > xLower:
+                del(self.nodeList[i])
+                break
+        self.canvas.destroy()
+        self.loadImage()
+
+    def addPathClickPlace(self, x1,y1,x2,y2):
+        x1Upper = x1+1
+        x1Lower = x1-1
+        y1Upper = y1+1
+        y1Lower = y1-1
+
+        x2Upper = x2+1
+        x2Lower = x2-1
+        y2Upper = y2+1
+        y2Lower = y2-1
+
+        for i in range(len(self.nodeList)): 
+            if float(self.nodeList[i]["node"]["pose"]["position"]["y"])<y1Upper and float(self.nodeList[i]["node"]["pose"]["position"]["y"]) > y1Lower and float(self.nodeList[i]["node"]["pose"]["position"]["x"])<x1Upper and float(self.nodeList[i]["node"]["pose"]["position"]["x"]) > x1Lower:
+                startNode = self.nodeList[i]["node"]["name"]
+
+        for i in range(len(self.nodeList)): 
+            if float(self.nodeList[i]["node"]["pose"]["position"]["y"])<y2Upper and float(self.nodeList[i]["node"]["pose"]["position"]["y"]) > y2Lower and float(self.nodeList[i]["node"]["pose"]["position"]["x"])<x2Upper and float(self.nodeList[i]["node"]["pose"]["position"]["x"]) > x2Lower:
+                endNode = self.nodeList[i]["node"]["name"]
+
+        newPath = copy.deepcopy(self.nodeList[1]["node"]["edges"][0])
+        newPath["node"] = startNode
+        newPath["edge_id"] = startNode + "_" + endNode
+
+        for index in range(len(self.nodeList)):
+            if startNode == self.nodeList[index]["meta"]["node"]:
+                self.nodeList[index]["node"]["edges"].append(newPath)
+                break
+        self.canvas.destroy()
+        self.loadImage()
+
+    def deletePathClickRemove(self, x1,y1,x2,y2):
+        x1Upper = x1+1
+        x1Lower = x1-1
+        y1Upper = y1+1
+        y1Lower = y1-1
+
+        x2Upper = x2+1
+        x2Lower = x2-1
+        y2Upper = y2+1
+        y2Lower = y2-1
+
+        for i in range(len(self.nodeList)): 
+            if self.nodeList[i]["node"]["pose"]["position"]["y"]<y1Upper and self.nodeList[i]["node"]["pose"]["position"]["y"] > y1Lower and self.nodeList[i]["node"]["pose"]["position"]["x"]<x1Upper and self.nodeList[i]["node"]["pose"]["position"]["x"] > x1Lower:
+                startNode = self.nodeList[i]["node"]["name"]
+
+        for i in range(len(self.nodeList)): 
+            if self.nodeList[i]["node"]["pose"]["position"]["y"]<y2Upper and self.nodeList[i]["node"]["pose"]["position"]["y"] > y2Lower and self.nodeList[i]["node"]["pose"]["position"]["x"]<x2Upper and self.nodeList[i]["node"]["pose"]["position"]["x"] > x2Lower:
+                endNode = self.nodeList[i]["node"]["name"]
+
+        searchPath = startNode + "_" + endNode  
+        searchPath2 = endNode + "_" + startNode  
+
+        for i in range(len(self.nodeList)):     
+            for j in range(len(self.nodeList[i]["node"]["edges"])):
+                if self.nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath:
+                    del(self.nodeList[i]["node"]["edges"][j])
+                    break
+        for i in range(len(self.nodeList)):     
+            for j in range(len(self.nodeList[i]["node"]["edges"])):
+                if self.nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath2:
+                    del(self.nodeList[i]["node"]["edges"][j])
+                    break
+
+        self.canvas.destroy()
+        self.loadImage()
+                    
+           
 
     def nodeDelete(self):
         #nodeList = self.readYaml(self.mainGUI.tmapPath)
@@ -204,11 +378,10 @@ class EditingPage(tk.Frame):
           if self.nodeList[index]["meta"]["node"] == nodeName:
               #Deletes Node
               del(self.nodeList[index])
-              #stream = open(self.mainGUI.tmapPath, 'w')   
-              #yaml.dump(self.nodeList, stream) 
-              #stream.close()
-              self.canvas.destroy()
-              self.loadImage()
+              break
+
+        self.canvas.destroy()
+        self.loadImage()
 
     def addNode(self):
         #Get User Input
@@ -229,9 +402,6 @@ class EditingPage(tk.Frame):
     
         #Appends new node to rest of the file then dumps into file
         self.nodeList.append(newNode)
-        #stream = open(self.mainGUI.tmapPath, 'w')   
-        #yaml.dump(self.nodeList, stream) 
-        #stream.close()
         self.canvas.destroy()
         self.loadImage()
 
@@ -248,13 +418,15 @@ class EditingPage(tk.Frame):
               #Changing Variables to Match User Input
               self.nodeList[index]["node"]["pose"]["position"]["x"] = newX
               self.nodeList[index]["node"]["pose"]["position"]["y"] = newY    
-              #Opens "write" Stream 
-              #stream = open(self.mainGUI.tmapPath, 'w')
-              ##Dumps New Yaml Data into File
-              #yaml.dump(self.nodeList, stream) 
-              #stream.close()
               self.canvas.destroy()
               self.loadImage()
+
+    def scale(self):
+        self.SCALE = float(self.scaleEntry.get())
+        if self.SCALE == None:
+            self.SCALE = 3
+        self.canvas.destroy()
+        self.loadImage()
               
     def nodeNumber(self, filename):
         #searches all "WayPoint" data and takes the numbers from the ends of those strings
@@ -279,14 +451,14 @@ class EditingPage(tk.Frame):
 
     def pathAdd(self):
         #nodeList = self.readYaml(self.mainGUI.tmapPath)
-        nodeName1 = self.nodeName1Entry.get()
-        nodeName2 = self.nodeName2Entry.get()
+        pathStart = self.pathStartEntry.get()
+        pathEnd = self.pathEndEntry.get()
         newPath = copy.deepcopy(self.nodeList[1]["node"]["edges"][0])
-        newPath["edge_id"] = nodeName1 + "_" + nodeName2
-        newPath["node"] = nodeName1
+        newPath["edge_id"] = pathStart + "_" + pathEnd
+        newPath["node"] = pathStart
 
         for index in range(len(self.nodeList)):
-            if nodeName1 == self.nodeList[index]["meta"]["node"]:
+            if pathEnd == self.nodeList[index]["meta"]["node"]:
                 self.nodeList[index]["node"]["edges"].append(newPath)
                 #stream = open(self.mainGUI.tmapPath, 'w')   
                 #yaml.dump(self.nodeList, stream) 
@@ -296,18 +468,25 @@ class EditingPage(tk.Frame):
 
     def pathDelete(self):
         #nodeList = self.readYaml(self.mainGUI.tmapPath)
-        nodeName1 = self.nodeName1Entry.get()
-        nodeName2 = self.nodeName2Entry.get()
-        searchPath = nodeName1 + "_" + nodeName2      
+        pathStart = self.pathStartEntry.get()
+        pathEnd = self.pathEndEntry.get()
+        searchPath = pathStart + "_" + pathEnd 
+        searchPath2 = pathEnd + "_" + pathStart
         for i in range(len(self.nodeList)):     
             for j in range(len(self.nodeList[i]["node"]["edges"])):
                 if self.nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath:
                     del(self.nodeList[i]["node"]["edges"][j])
-                    #stream = open(self.mainGUI.tmapPath, 'w')   
-                    #yaml.dump(self.nodeList, stream) 
-                    #stream.close()
-                    self.canvas.destroy()
-                    self.loadImage()
+                    break
+        for i in range(len(self.nodeList)):     
+            for j in range(len(self.nodeList[i]["node"]["edges"])):
+                if self.nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath2:
+                    del(self.nodeList[i]["node"]["edges"][j])
+                    break
+        self.canvas.destroy()
+        self.loadImage()
+
+
+
     def mapSave(self):
         stream = open(self.mainGUI.tmapPath, 'w')   
         yaml.dump(self.nodeList, stream) 
@@ -331,21 +510,18 @@ class EditingPage(tk.Frame):
                 if point[2] == pointB:
                     pointBCoords = [point[0], point[1]]
             if(pointACoords != None and pointBCoords != None):
-                self.draw_line(pointACoords, pointBCoords, self.yamlFile["resolution"])
+                self.draw_line(pointACoords, pointBCoords)
+
         for point in points:
             #print(F"Plotting point {point[2][8:]}")
             if(point[0] != "" or point[1] != ""):
-                self.draw_point(float(point[0]), float(point[1]), point[2][8:], float(self.yamlFile["resolution"]))
-#sticky = E, padx=40
+                self.draw_point(float(point[0]), float(point[1]), point[2][8:])
+
 
     def loadImage(self):
-        im = PILImage.open(self.mainGUI.mapPath)
-        self.SCALE = 3
-        self.ORIGIN = (self.yamlFile["origin"][0], self.yamlFile["origin"][1])
-        self.width, self.height = im.size
         self.canvas = Canvas(self, width=self.width/self.SCALE, height = self.height/self.SCALE)
         self.canvas.grid(row = 1, column=1)  
-        image2=im.resize((int(self.width/self.SCALE),int(self.height/self.SCALE)),PILImage.ANTIALIAS)
+        image2=self.im.resize((int(self.width/self.SCALE),int(self.height/self.SCALE)),PILImage.ANTIALIAS)
         picture=ImageTk.PhotoImage(image2)
         label = Label(image=picture)
         label.image = picture # keep a reference!
@@ -354,14 +530,14 @@ class EditingPage(tk.Frame):
         self.canvas.create_image(0,0, anchor=NW, image=picture) 
         self.drawingWayPoints()
 
-    def draw_line(self, a, b, scale):
-        newAX, newAY =  (((float(a[0])-float(self.ORIGIN[0]))/scale)/self.SCALE), (self.height/self.SCALE)- (((float(a[1])-float(self.ORIGIN[1]))/scale)/self.SCALE)
-        newBX, newBY =  (((float(b[0])-float(self.ORIGIN[0]))/scale)/self.SCALE), (self.height/self.SCALE)- (((float(b[1])-float(self.ORIGIN[1]))/scale)/self.SCALE)
+    def draw_line(self, a, b):
+        newAX, newAY =  (((float(a[0])-float(self.ORIGIN[0]))/self.scale)/self.SCALE), (self.height/self.SCALE)- (((float(a[1])-float(self.ORIGIN[1]))/self.scale)/self.SCALE)
+        newBX, newBY =  (((float(b[0])-float(self.ORIGIN[0]))/self.scale)/self.SCALE), (self.height/self.SCALE)- (((float(b[1])-float(self.ORIGIN[1]))/self.scale)/self.SCALE)
         self.canvas.create_line(newAX, newAY, newBX, newBY)
 
-    def draw_point(self, x, y, label, scale):
-
-        newX, newY =  (((x-self.ORIGIN[0])/scale)/self.SCALE), (self.height/self.SCALE)- (((y-self.ORIGIN[1])/scale)/self.SCALE)
+    def draw_point(self, x, y, label):
+        print(x, ",", y)
+        newX, newY =  (((x - self.ORIGIN[0])/self.scale)/self.SCALE), (self.height/self.SCALE)- (((y - self.ORIGIN[1])/self.scale)/self.SCALE)
         radius = 7.5
         self.canvas.create_oval(newX - radius, newY - radius, newX + radius, newY + radius, fill = 'blue')
         self.canvas.create_text(newX, newY, text = label, font=("Courier", 6), fill='white')
@@ -371,7 +547,15 @@ class EditingPage(tk.Frame):
     def onShow(self):
         self.nodeList = self.readYaml(self.mainGUI.tmapPath)
         self.yamlFile = self.readYaml(self.mainGUI.yamlPath)
+        self.scale = float(self.yamlFile["resolution"])
+        self.ORIGIN = (self.yamlFile["origin"][0], self.yamlFile["origin"][1])
+        self.im = PILImage.open(self.mainGUI.mapPath)
+        self.width, self.height = self.im.size
         self.loadImage()
+        self.pathx1=0
+        self.pathy1=0
+        self.pathx2=0
+        self.pathy2=0
 
 
 
