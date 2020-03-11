@@ -295,7 +295,7 @@ class EditingPage(tk.Frame):
         yUpper = y+1
         yLower = y-1
         for i in range(len(self.nodeList)): 
-            if self.nodeList[i]["node"]["pose"]["position"]["y"]<yUpper and self.nodeList[i]["node"]["pose"]["position"]["y"] > yLower and self.nodeList[i]["node"]["pose"]["position"]["x"]<xUpper and self.nodeList[i]["node"]["pose"]["position"]["x"] > xLower:
+            if float(self.nodeList[i]["node"]["pose"]["position"]["y"])<yUpper and float(self.nodeList[i]["node"]["pose"]["position"]["y"]) > yLower and float(self.nodeList[i]["node"]["pose"]["position"]["x"])<xUpper and float(self.nodeList[i]["node"]["pose"]["position"]["x"]) > xLower:
                 del(self.nodeList[i])
                 break
         self.canvas.destroy()
@@ -343,7 +343,7 @@ class EditingPage(tk.Frame):
         y2Lower = y2-1
 
         for i in range(len(self.nodeList)): 
-            if self.nodeList[i]["node"]["pose"]["position"]["y"]<y1Upper and self.nodeList[i]["node"]["pose"]["position"]["y"] > y1Lower and self.nodeList[i]["node"]["pose"]["position"]["x"]<x1Upper and self.nodeList[i]["node"]["pose"]["position"]["x"] > x1Lower:
+            if float(self.nodeList[i]["node"]["pose"]["position"]["y"])<y1Upper and float(self.nodeList[i]["node"]["pose"]["position"]["y"]) > y1Lower and float(self.nodeList[i]["node"]["pose"]["position"]["x"])<x1Upper and float(self.nodeList[i]["node"]["pose"]["position"]["x"]) > x1Lower:
                 startNode = self.nodeList[i]["node"]["name"]
 
         for i in range(len(self.nodeList)): 
@@ -513,7 +513,6 @@ class EditingPage(tk.Frame):
                 self.draw_line(pointACoords, pointBCoords)
 
         for point in points:
-            #print(F"Plotting point {point[2][8:]}")
             if(point[0] != "" or point[1] != ""):
                 self.draw_point(float(point[0]), float(point[1]), point[2][8:])
 
@@ -536,7 +535,6 @@ class EditingPage(tk.Frame):
         self.canvas.create_line(newAX, newAY, newBX, newBY)
 
     def draw_point(self, x, y, label):
-        print(x, ",", y)
         newX, newY =  (((x - self.ORIGIN[0])/self.scale)/self.SCALE), (self.height/self.SCALE)- (((y - self.ORIGIN[1])/self.scale)/self.SCALE)
         radius = 7.5
         self.canvas.create_oval(newX - radius, newY - radius, newX + radius, newY + radius, fill = 'blue')
