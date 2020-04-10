@@ -1,5 +1,6 @@
 import yaml
 import copy
+import os.path
 from PIL import Image as PILImage,ImageTk
 from tkinter import Canvas, Tk, NW, mainloop
  
@@ -35,11 +36,16 @@ def nodeNumber(filename):
 #Editing Existing Node Data in the Yaml File
 def editNode(filename):
     nodeList = readYaml(filename)
-    print("Choose a node to edit")
     print(nodeNames(filename))
+    print("Choose a node to edit")
     nodeName = input("Enter node: \n")
-    newX = int(input("Enter new x value: \n"))
-    newY = int (input("enter new y value: \n"))
+    while True:
+        try:
+            newX = int(input("enter new x value: \n"))
+            newY = int (input("enter new y value: \n"))
+            break
+        except:
+            print("Please enter a integer values to add a new node!")
     
     #Searches from the First to the Last Node
     for index in range(len(nodeList)):     
@@ -51,7 +57,7 @@ def editNode(filename):
           print(nodeList[index]["node"]["pose"]["position"])
           
           #Opens "write" Stream 
-          stream = open('riseholme.tmap', 'w')
+          stream = open(filename, 'w')
           #Dumps New Yaml Data into File
           yaml.dump(nodeList, stream)   
           break
@@ -66,7 +72,7 @@ def deleteNode(filename):
       if nodeList[index]["meta"]["node"] == nodeName:
           #Deletes Node
           del(nodeList[index])
-          stream = open('riseholme.tmap', 'w')   
+          stream = open(filename, 'w')   
           yaml.dump(nodeList, stream)   
 
 
@@ -82,7 +88,7 @@ def addPath(filename):
     for index in range(len(nodeList)):
         if nodeName1 == nodeList[index]["meta"]["node"]:
             nodeList[index]["node"]["edges"].append(newPath)
-            stream = open('riseholme.tmap', 'w')   
+            stream = open(filename, 'w')   
             yaml.dump(nodeList, stream)   
             #how to access a specific path print(nodeList[1]["node"]["edges"][0]["edge_id"])
 
@@ -98,7 +104,7 @@ def deletePath(filename):
             if nodeList[i]["node"]["edges"][j]["edge_id"] == searchPath:
                 print(i, j, "\n", nodeList[i]["node"]["edges"][j])
                 del(nodeList[i]["node"]["edges"][j])
-                stream = open('riseholme.tmap', 'w')   
+                stream = open(filename, 'w')   
                 yaml.dump(nodeList, stream)  
 
 
@@ -122,8 +128,13 @@ def printPaths(filename):
 def addNode(filename):
     #Get User Input
     print("to make new node, enter x and y")
-    newX = int(input("enter new x value: \n"))
-    newY = int (input("enter new y value: \n"))
+    while True:
+        try:
+            newX = int(input("enter new x value: \n"))
+            newY = int (input("enter new y value: \n"))
+            break
+        except:
+            print("Please enter a integer values to add a new node!")
 
     #Gets File, Takes a Node to be Used as a Template for our New Node
     nodeList = readYaml(filename)
@@ -144,10 +155,10 @@ def addNode(filename):
     
     #Appends new node to rest of the file then dumps into file
     nodeList.append(newNode)
-    stream = open('riseholme.tmap', 'w')   
+    stream = open(filename, 'w')   
     yaml.dump(nodeList, stream)   
 
-def showMap(filename, imagename, ORIGIN, SCALE):
+def showMap(filename, imagename, ORIGIN, SCALE, scale):
     points = nodeCoords(filename)
     im = PILImage.open(imagename)
     width, height = im.size
@@ -173,10 +184,10 @@ def showMap(filename, imagename, ORIGIN, SCALE):
             if point[2] == pointB:
                 pointBCoords = [point[0], point[1]]
         if(pointACoords != None and pointBCoords != None):
-                draw_line(pointACoords, pointBCoords, 0.05, ORIGIN, SCALE, width, height, canvas)
+                draw_line(pointACoords, pointBCoords, scale, ORIGIN, SCALE, width, height, canvas)
 
     for point in points:
-        draw_point(point[0], point[1], 0.05, point[2][8:], ORIGIN, SCALE, width, height, canvas)
+        draw_point(point[0], point[1], scale, point[2][8:], ORIGIN, SCALE, width, height, canvas)
 
     mainloop()  
 
@@ -191,33 +202,64 @@ def draw_line(a, b, scale, ORIGIN, SCALE, width, height, canvas):
     newBX, newBY =  (((b[0]-ORIGIN[0])/scale)/SCALE), (height/SCALE)- (((b[1]-ORIGIN[1])/scale)/SCALE)
     canvas.create_line(newAX, newAY, newBX, newBY)
   
-
-def switch():
-        SCALE = 2
-        ORIGIN = (-31.45, -12.45)
+def switch(TMAP, YAML, PGM):
+        yamlFile = readYaml(YAML)
+        SCALE = 1.5
+        scale = float(yamlFile["resolution"])
+        ORIGIN = (yamlFile["origin"][0], yamlFile["origin"][1])
         i=0
-        while i != 9:
-            i = int(input())
-            if i == 1:
-                addNode("riseholme.tmap")  
-            if i == 2:
-                editNode("riseholme.tmap")  
-            if i == 3:
-                deleteNode("riseholme.tmap")
-            if i == 4:
-                print(nodeNames("riseholme.tmap")) 
-            if i == 5:
-                addPath("riseholme.tmap")  
-            if i == 6:
-                deletePath("riseholme.tmap")
-            if i == 7:
-                printPaths("riseholme.tmap")
-            if i == 8:
-                showMap('riseholme.tmap', 'riseholme.pgm', ORIGIN, SCALE)
+        while True:
+            try:
+                while i != 9:
+                    print("Enter the number corrosponding to the function you wish to execute:")
+                    print("1.Add Node\n2.Edit Node\n3.Delete Node\n4.Print Nodes\n5.Add Path\n6.Delete Path\n7.Print Paths\n8.Show Map\n9.Close Program")
+                    i = int(input("-> "))
+                    if i == 1:
+                        addNode(TMAP)  
+                    if i == 2:
+                        editNode(TMAP)  
+                    if i == 3:
+                        deleteNode(TMAP)
+                    if i == 4:
+                        print(nodeNames(TMAP)) 
+                    if i == 5:
+                        addPath(TMAP)  
+                    if i == 6:
+                        deletePath(TMAP)
+                    if i == 7:
+                        printPaths(TMAP)
+                    if i == 8:
+                        showMap(TMAP, PGM, ORIGIN, SCALE, scale)
+                break
+            except:
+                print("Please make sure you enter a number between 1 and 9! \n")
 
-print("Enter the number corrosponding to the function you wish to execute:")
-print("1.Add Node\n2.Edit Node\n3.Delete Node\n4.Print Nodes\n5.Add Path\n6.Delete Path\n7.Print Paths\n8.Show Map")
-switch()
+def cli_input():
+    #Exception handling interations
+    while True:
+        TMAP = str(input("Please input the TMAP file path you will be using: "))
+        #User input for files being used
+        if os.path.exists(TMAP) != True:
+            print("Please enter a valid file or make sure your files are in the correct folder")
+            continue
+        break
+    while True:
+        YAML = str(input("Please input the YAML file path you will be using: "))
+        if os.path.exists(YAML) != True:
+            print("Please enter a valid file or make sure your files are in the correct folder")
+            continue
+        break
+    while True:
+        PGM = str(input("Please input the PGM file path you will be using: "))
+        if os.path.exists(PGM) != True: #Checking the file exists and is in the correct place
+            print("Please enter a valid file or make sure your files are in the correct folder")
+            continue
+            #Iterates unitl a correct file is inputted
+        break
+    switch(TMAP,YAML,PGM)
+
+cli_input()
+#Initial function
 
 #Uncomment the function you wish to call
 #All methods take file name to make file switching easy
